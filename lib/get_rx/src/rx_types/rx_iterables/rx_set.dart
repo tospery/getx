@@ -1,8 +1,11 @@
 part of rx_types;
 
-class RxSet<E> extends GetListenable<Set<E>>
-    with SetMixin<E>, RxObjectMixin<Set<E>> {
-  RxSet([Set<E> initial = const {}]) : super(initial);
+class RxSet<E> extends SetMixin<E>
+    with NotifyManager<Set<E>>, RxObjectMixin<Set<E>>
+    implements RxInterface<Set<E>> {
+  RxSet([Set<E> initial = const {}]) {
+    _value = Set.from(initial);
+  }
 
   /// Special override to push() element(s) in a reactive way
   /// inside the List,
@@ -12,34 +15,31 @@ class RxSet<E> extends GetListenable<Set<E>>
     return this;
   }
 
-  void update(void Function(Iterable<E>? value) fn) {
+  void update(void fn(Iterable<E>? value)) {
     fn(value);
     refresh();
   }
 
-  // @override
-  // @protected
-  // Set<E> get value {
-  //   return subject.value;
-  //   // RxInterface.proxy?.addListener(subject);
-  //   // return _value;
-  // }
+  @override
+  @protected
+  Set<E> get value {
+    RxInterface.proxy?.addListener(subject);
+    return _value;
+  }
 
   @override
   @protected
   set value(Set<E> val) {
-    if (value == val) return;
-    value = val;
+    if (_value == val) return;
+    _value = val;
     refresh();
   }
 
   @override
   bool add(E value) {
-    final hasAdded = this.value.add(value);
-    if (hasAdded) {
-      refresh();
-    }
-    return hasAdded;
+    final val = _value.add(value);
+    refresh();
+    return val;
   }
 
   @override
@@ -54,13 +54,13 @@ class RxSet<E> extends GetListenable<Set<E>>
   int get length => value.length;
 
   @override
-  E? lookup(Object? element) {
-    return value.lookup(element);
+  E? lookup(Object? object) {
+    return value.lookup(object);
   }
 
   @override
-  bool remove(Object? value) {
-    var hasRemoved = this.value.remove(value);
+  bool remove(Object? item) {
+    var hasRemoved = _value.remove(item);
     if (hasRemoved) {
       refresh();
     }
@@ -73,32 +73,32 @@ class RxSet<E> extends GetListenable<Set<E>>
   }
 
   @override
-  void addAll(Iterable<E> elements) {
-    value.addAll(elements);
+  void addAll(Iterable<E> item) {
+    _value.addAll(item);
     refresh();
   }
 
   @override
   void clear() {
-    value.clear();
+    _value.clear();
     refresh();
   }
 
   @override
   void removeAll(Iterable<Object?> elements) {
-    value.removeAll(elements);
+    _value.removeAll(elements);
     refresh();
   }
 
   @override
   void retainAll(Iterable<Object?> elements) {
-    value.retainAll(elements);
+    _value.retainAll(elements);
     refresh();
   }
 
   @override
-  void retainWhere(bool Function(E) test) {
-    value.retainWhere(test);
+  void retainWhere(bool Function(E) E) {
+    _value.retainWhere(E);
     refresh();
   }
 }

@@ -44,7 +44,7 @@ void main() {
     debounce(count, (dynamic _) {
       // print(_);
       result = _ as int?;
-    }, time: Duration(milliseconds: 100));
+    }, time: const Duration(milliseconds: 100));
 
     count.value++;
     count.value++;
@@ -52,32 +52,32 @@ void main() {
     count.value++;
     await Future.delayed(Duration.zero);
     expect(-1, result);
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     expect(4, result);
   });
 
   test('interval', () async {
     final count = 0.obs;
     int? result = -1;
-    interval<int>(count, (v) {
-      print(v);
-      result = v;
-    }, time: Duration(milliseconds: 100));
+    interval(count, (dynamic _) {
+      // print(_);
+      result = _ as int?;
+    }, time: const Duration(milliseconds: 100));
 
     count.value++;
     await Future.delayed(Duration.zero);
-    await Future.delayed(Duration(milliseconds: 100));
-    expect(result, 1);
+    await Future.delayed(const Duration(milliseconds: 100));
+    expect(1, result);
     count.value++;
     count.value++;
     count.value++;
     await Future.delayed(Duration.zero);
-    await Future.delayed(Duration(milliseconds: 100));
-    expect(result, 2);
+    await Future.delayed(const Duration(milliseconds: 100));
+    expect(2, result);
     count.value++;
     await Future.delayed(Duration.zero);
-    await Future.delayed(Duration(milliseconds: 100));
-    expect(result, 5);
+    await Future.delayed(const Duration(milliseconds: 100));
+    expect(5, result);
   });
 
   test('bindStream test', () async {
@@ -97,7 +97,7 @@ void main() {
     controller.close();
   });
 
-  test('Rx same value will not call the same listener when call', () async {
+  test('Rx same value will not call the same listener when `call`', () async {
     var reactiveInteger = RxInt(2);
     var timesCalled = 0;
     reactiveInteger.listen((newInt) {
@@ -110,11 +110,11 @@ void main() {
     reactiveInteger.call(3);
     reactiveInteger.call(3);
 
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     expect(1, timesCalled);
   });
 
-  test('Rx different value will call the listener when trigger', () async {
+  test('Rx different value will call the listener when `trigger`', () async {
     var reactiveInteger = RxInt(0);
     var timesCalled = 0;
     reactiveInteger.listen((newInt) {
@@ -127,12 +127,11 @@ void main() {
     reactiveInteger.trigger(2);
     reactiveInteger.trigger(3);
 
-    await Future.delayed(Duration(milliseconds: 100));
-    print(timesCalled);
+    await Future.delayed(const Duration(milliseconds: 100));
     expect(3, timesCalled);
   });
 
-  test('Rx same value will call the listener when trigger', () async {
+  test('Rx same value will call the listener when `trigger`', () async {
     var reactiveInteger = RxInt(2);
     var timesCalled = 0;
     reactiveInteger.listen((newInt) {
@@ -146,7 +145,7 @@ void main() {
     reactiveInteger.trigger(3);
     reactiveInteger.trigger(1);
 
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     expect(4, timesCalled);
   });
 
@@ -195,11 +194,6 @@ void main() {
 
     count = 0;
     list.addAll([4, 5]);
-    await Future.delayed(Duration.zero);
-    expect(count, 1);
-
-    count = 0;
-    list.remove(2);
     await Future.delayed(Duration.zero);
     expect(count, 1);
 

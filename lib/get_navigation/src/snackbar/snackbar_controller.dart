@@ -72,13 +72,13 @@ class SnackbarController {
   // ignore: avoid_returning_this
   void _configureAlignment(SnackPosition snackPosition) {
     switch (snackbar.snackPosition) {
-      case SnackPosition.top:
+      case SnackPosition.TOP:
         {
           _initialAlignment = const Alignment(-1.0, -2.0);
           _endAlignment = const Alignment(-1.0, -1.0);
           break;
         }
-      case SnackPosition.bottom:
+      case SnackPosition.BOTTOM:
         {
           _initialAlignment = const Alignment(-1.0, 2.0);
           _endAlignment = const Alignment(-1.0, 1.0);
@@ -87,19 +87,11 @@ class SnackbarController {
     }
   }
 
-  bool _isTesting = false;
-
   void _configureOverlay() {
-    final overlayContext = Get.overlayContext;
-    _isTesting = overlayContext == null;
-    _overlayState =
-        _isTesting ? OverlayState() : Overlay.of(Get.overlayContext!);
+    _overlayState = Overlay.of(Get.overlayContext!);
     _overlayEntries.clear();
     _overlayEntries.addAll(_createOverlayEntries(_getBodyWidget()));
-    if (!_isTesting) {
-      _overlayState!.insertAll(_overlayEntries);
-    }
-
+    _overlayState!.insertAll(_overlayEntries);
     _configureSnackBarDisplay();
   }
 
@@ -248,7 +240,7 @@ class SnackbarController {
   }
 
   DismissDirection _getDefaultDismissDirection() {
-    if (snackbar.snackPosition == SnackPosition.top) {
+    if (snackbar.snackPosition == SnackPosition.TOP) {
       return DismissDirection.up;
     }
     return DismissDirection.down;
@@ -259,8 +251,8 @@ class SnackbarController {
       direction: snackbar.dismissDirection ?? _getDefaultDismissDirection(),
       resizeDuration: null,
       confirmDismiss: (_) {
-        if (_currentStatus == SnackbarStatus.opening ||
-            _currentStatus == SnackbarStatus.closing) {
+        if (_currentStatus == SnackbarStatus.OPENING ||
+            _currentStatus == SnackbarStatus.CLOSING) {
           return Future.value(false);
         }
         return Future.value(true);
@@ -284,23 +276,23 @@ class SnackbarController {
   void _handleStatusChanged(AnimationStatus status) {
     switch (status) {
       case AnimationStatus.completed:
-        _currentStatus = SnackbarStatus.open;
+        _currentStatus = SnackbarStatus.OPEN;
         _snackbarStatus?.call(_currentStatus);
         if (_overlayEntries.isNotEmpty) _overlayEntries.first.opaque = false;
 
         break;
       case AnimationStatus.forward:
-        _currentStatus = SnackbarStatus.opening;
+        _currentStatus = SnackbarStatus.OPENING;
         _snackbarStatus?.call(_currentStatus);
         break;
       case AnimationStatus.reverse:
-        _currentStatus = SnackbarStatus.closing;
+        _currentStatus = SnackbarStatus.CLOSING;
         _snackbarStatus?.call(_currentStatus);
         if (_overlayEntries.isNotEmpty) _overlayEntries.first.opaque = false;
         break;
       case AnimationStatus.dismissed:
         assert(!_overlayEntries.first.opaque);
-        _currentStatus = SnackbarStatus.closed;
+        _currentStatus = SnackbarStatus.CLOSED;
         _snackbarStatus?.call(_currentStatus);
         _removeOverlay();
         break;
@@ -324,10 +316,8 @@ class SnackbarController {
   }
 
   void _removeOverlay() {
-    if (!_isTesting) {
-      for (var element in _overlayEntries) {
-        element.remove();
-      }
+    for (var element in _overlayEntries) {
+      element.remove();
     }
 
     assert(!_transitionCompleter.isCompleted,

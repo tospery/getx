@@ -6,12 +6,14 @@ import 'dart:convert';
 
 class CasesModel {
   CasesModel({
+    required this.id,
     required this.message,
     required this.global,
     required this.countries,
     required this.date,
   });
 
+  final String id;
   final String message;
   final Global global;
   final List<Country> countries;
@@ -23,6 +25,7 @@ class CasesModel {
   String toRawJson() => json.encode(toJson());
 
   factory CasesModel.fromJson(Map<String, dynamic> json) => CasesModel(
+        id: json["ID"] as String,
         message: json["Message"] as String,
         global: Global.fromJson(json["Global"] as Map<String, dynamic>),
         countries: List<Country>.from((json["Countries"] as Iterable).map(
@@ -32,6 +35,7 @@ class CasesModel {
       );
 
   Map<String, dynamic> toJson() => {
+        "ID": id,
         "Message": message,
         "Global": global.toJson(),
         "Countries": List<dynamic>.from(countries.map((x) => x.toJson())),

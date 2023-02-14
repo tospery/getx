@@ -1,9 +1,12 @@
 part of rx_types;
 
 /// Create a list similar to `List<T>`
-class RxList<E> extends GetListenable<List<E>>
-    with ListMixin<E>, RxObjectMixin<List<E>> {
-  RxList([List<E> initial = const []]) : super(initial);
+class RxList<E> extends ListMixin<E>
+    with NotifyManager<List<E>>, RxObjectMixin<List<E>>
+    implements RxInterface<List<E>> {
+  RxList([List<E> initial = const []]) {
+    _value = List.from(initial);
+  }
 
   factory RxList.filled(int length, E fill, {bool growable = false}) {
     return RxList(List.filled(length, fill, growable: growable));
@@ -24,7 +27,7 @@ class RxList<E> extends GetListenable<List<E>>
   }
 
   /// Generates a list of values.
-  factory RxList.generate(int length, E Function(int index) generator,
+  factory RxList.generate(int length, E generator(int index),
       {bool growable = true}) {
     return RxList(List.generate(length, generator, growable: growable));
   }
@@ -39,7 +42,7 @@ class RxList<E> extends GetListenable<List<E>>
 
   @override
   void operator []=(int index, E val) {
-    value[index] = val;
+    _value[index] = val;
     refresh();
   }
 
@@ -58,66 +61,53 @@ class RxList<E> extends GetListenable<List<E>>
   }
 
   @override
-  void add(E element) {
-    value.add(element);
+  void add(E item) {
+    _value.add(item);
     refresh();
   }
 
   @override
-  void addAll(Iterable<E> iterable) {
-    value.addAll(iterable);
+  void addAll(Iterable<E> item) {
+    _value.addAll(item);
     refresh();
   }
 
   @override
-  bool remove(Object? element) {
-    final removed = value.remove(element);
-    refresh();
-    return removed;
-  }
-
-  @override
-  void removeWhere(bool Function(E element) test) {
-    value.removeWhere(test);
+  void removeWhere(bool test(E element)) {
+    _value.removeWhere(test);
     refresh();
   }
 
   @override
-  void retainWhere(bool Function(E element) test) {
-    value.retainWhere(test);
+  void retainWhere(bool test(E element)) {
+    _value.retainWhere(test);
     refresh();
   }
 
   @override
   int get length => value.length;
 
-  // @override
-  // @protected
-  // List<E> get value {
-  //   RxInterface.proxy?.addListener(subject);
-  //   return subject.value;
-  // }
+  @override
+  @protected
+  List<E> get value {
+    RxInterface.proxy?.addListener(subject);
+    return _value;
+  }
 
   @override
   set length(int newLength) {
-    value.length = newLength;
+    _value.length = newLength;
     refresh();
   }
 
   @override
   void insertAll(int index, Iterable<E> iterable) {
-    value.insertAll(index, iterable);
+    _value.insertAll(index, iterable);
     refresh();
   }
 
   @override
   Iterable<E> get reversed => value.reversed;
-
-  @override
-  set value(List<E> val) {
-    value = val;
-    refresh();
-  }
 
   @override
   Iterable<E> where(bool Function(E) test) {
@@ -130,8 +120,8 @@ class RxList<E> extends GetListenable<List<E>>
   }
 
   @override
-  void sort([int Function(E a, E b)? compare]) {
-    value.sort(compare);
+  void sort([int compare(E a, E b)?]) {
+    _value.sort(compare);
     refresh();
   }
 }
@@ -167,18 +157,16 @@ extension ListExtension<E> on List<E> {
     //   (this as RxList)._value;
     // }
 
-    if (this is RxList) {
-      (this as RxList).value.clear();
-    }
+    clear();
     add(item);
   }
 
   /// Replaces all existing items of this list with [items]
   void assignAll(Iterable<E> items) {
-    if (this is RxList) {
-      (this as RxList).value.clear();
-    }
-    //clear();
+    // if (this is RxList) {
+    //   (this as RxList)._value;
+    // }
+    clear();
     addAll(items);
   }
 }

@@ -67,7 +67,7 @@ class GetResponsiveView<T> extends GetView<T> with GetResponsiveMixin {
         super(key: key);
 }
 
-class GetResponsiveWidget<T extends GetLifeCycleMixin> extends GetWidget<T>
+class GetResponsiveWidget<T extends GetLifeCycleBase?> extends GetWidget<T>
     with GetResponsiveMixin {
   @override
   final bool alwaysUseBuilder;
@@ -119,16 +119,16 @@ class ResponsiveScreen {
   double get width => context.width;
 
   /// Is [screenType] [ScreenType.Desktop]
-  bool get isDesktop => (screenType == ScreenType.desktop);
+  bool get isDesktop => (screenType == ScreenType.Desktop);
 
   /// Is [screenType] [ScreenType.Tablet]
-  bool get isTablet => (screenType == ScreenType.tablet);
+  bool get isTablet => (screenType == ScreenType.Tablet);
 
   /// Is [screenType] [ScreenType.Phone]
-  bool get isPhone => (screenType == ScreenType.phone);
+  bool get isPhone => (screenType == ScreenType.Phone);
 
   /// Is [screenType] [ScreenType.Watch]
-  bool get isWatch => (screenType == ScreenType.watch);
+  bool get isWatch => (screenType == ScreenType.Watch);
 
   double get _getdeviceWidth {
     if (_isPaltformDesktop) {
@@ -139,10 +139,10 @@ class ResponsiveScreen {
 
   ScreenType get screenType {
     final deviceWidth = _getdeviceWidth;
-    if (deviceWidth >= settings.desktopChangePoint) return ScreenType.desktop;
-    if (deviceWidth >= settings.tabletChangePoint) return ScreenType.tablet;
-    if (deviceWidth < settings.watchChangePoint) return ScreenType.watch;
-    return ScreenType.phone;
+    if (deviceWidth >= settings.desktopChangePoint) return ScreenType.Desktop;
+    if (deviceWidth >= settings.tabletChangePoint) return ScreenType.Tablet;
+    if (deviceWidth < settings.watchChangePoint) return ScreenType.Watch;
+    return ScreenType.Phone;
   }
 
   /// Return widget according to screen type
@@ -165,8 +165,8 @@ class ResponsiveScreen {
 }
 
 enum ScreenType {
-  watch,
-  phone,
-  tablet,
-  desktop,
+  Watch,
+  Phone,
+  Tablet,
+  Desktop,
 }

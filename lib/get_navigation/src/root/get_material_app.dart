@@ -6,10 +6,10 @@ import '../../../get_instance/get_instance.dart';
 import '../../../get_state_manager/get_state_manager.dart';
 import '../../../get_utils/get_utils.dart';
 import '../../get_navigation.dart';
-import '../router_report.dart';
 
 class GetMaterialApp extends StatelessWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
+
   final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
   final Widget? home;
   final Map<String, WidgetBuilder>? routes;
@@ -56,7 +56,7 @@ class GetMaterialApp extends StatelessWidget {
   final LogWriterCallback? logWriterCallback;
   final bool? popGesture;
   final SmartManagement smartManagement;
-  final List<Bind> binds;
+  final Bindings? initialBinding;
   final Duration? transitionDuration;
   final bool? defaultGlobalState;
   final List<GetPage>? getPages;
@@ -66,7 +66,6 @@ class GetMaterialApp extends StatelessWidget {
   final RouterDelegate<Object>? routerDelegate;
   final BackButtonDispatcher? backButtonDispatcher;
   final bool useInheritedMediaQuery;
-
   const GetMaterialApp({
     Key? key,
     this.navigatorKey,
@@ -119,23 +118,23 @@ class GetMaterialApp extends StatelessWidget {
     this.transitionDuration,
     this.defaultGlobalState,
     this.smartManagement = SmartManagement.full,
-    this.binds = const [],
+    this.initialBinding,
     this.unknownRoute,
     this.highContrastTheme,
     this.highContrastDarkTheme,
     this.actions,
   })  : routeInformationProvider = null,
-        backButtonDispatcher = null,
         routeInformationParser = null,
         routerDelegate = null,
+        backButtonDispatcher = null,
         super(key: key);
 
   GetMaterialApp.router({
     Key? key,
     this.routeInformationProvider,
     this.scaffoldMessengerKey,
-    this.routeInformationParser,
-    this.routerDelegate,
+    RouteInformationParser<Object>? routeInformationParser,
+    RouterDelegate<Object>? routerDelegate,
     this.backButtonDispatcher,
     this.builder,
     this.title = '',
@@ -176,111 +175,177 @@ class GetMaterialApp extends StatelessWidget {
     this.logWriterCallback,
     this.popGesture,
     this.smartManagement = SmartManagement.full,
-    this.binds = const [],
+    this.initialBinding,
     this.transitionDuration,
     this.defaultGlobalState,
     this.getPages,
     this.navigatorObservers,
     this.unknownRoute,
-  })  : navigatorKey = null,
+  })  : routerDelegate = routerDelegate ??= Get.createDelegate(
+          notFoundRoute: unknownRoute,
+        ),
+        routeInformationParser =
+            routeInformationParser ??= Get.createInformationParser(
+          initialRoute: getPages?.first.name ?? '/',
+        ),
+        //navigatorObservers = null,
+        navigatorKey = null,
         onGenerateRoute = null,
         home = null,
         onGenerateInitialRoutes = null,
         onUnknownRoute = null,
         routes = null,
         initialRoute = null,
-        super(key: key);
+        super(key: key) {
+    Get.routerDelegate = routerDelegate;
+    Get.routeInformationParser = routeInformationParser;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Binds(
-      binds: [
-        Bind.lazyPut<GetMaterialController>(
-          () => GetMaterialController(
-            ConfigData(
-              backButtonDispatcher: backButtonDispatcher,
-              binds: binds,
-              customTransition: customTransition,
-              defaultGlobalState: defaultGlobalState,
-              defaultTransition: defaultTransition,
-              enableLog: enableLog,
-              fallbackLocale: fallbackLocale,
-              getPages: getPages,
-              home: home,
-              initialRoute: initialRoute,
-              locale: locale,
-              logWriterCallback: logWriterCallback,
-              navigatorKey: navigatorKey,
-              navigatorObservers: navigatorObservers,
-              onDispose: onDispose,
-              onInit: onInit,
-              onReady: onReady,
-              opaqueRoute: opaqueRoute,
-              popGesture: popGesture,
-              routeInformationParser: routeInformationParser,
-              routeInformationProvider: routeInformationProvider,
-              routerDelegate: routerDelegate,
-              routingCallback: routingCallback,
-              scaffoldMessengerKey: scaffoldMessengerKey,
-              smartManagement: smartManagement,
-              transitionDuration: transitionDuration,
-              translations: translations,
-              translationsKeys: translationsKeys,
-              unknownRoute: unknownRoute,
-            ),
-          ),
-          onClose: () {
-            Get.clearTranslations();
-            RouterReportManager.dispose();
-            Get.resetInstance(clearRouteBindings: true);
-          },
-        ),
-        ...binds,
-      ],
-      child: Builder(builder: (context) {
-        final controller = context.listen<GetMaterialController>();
-        return MaterialApp.router(
-          routerDelegate: controller.routerDelegate,
-          routeInformationParser: controller.routeInformationParser,
-          backButtonDispatcher: backButtonDispatcher,
-          routeInformationProvider: routeInformationProvider,
-          key: controller.unikey,
-          builder: (context, child) => Directionality(
-            textDirection: textDirection ??
-                (rtlLanguages.contains(Get.locale?.languageCode)
-                    ? TextDirection.rtl
-                    : TextDirection.ltr),
-            child: builder == null
-                ? (child ?? Material())
-                : builder!(context, child ?? Material()),
-          ),
-          title: title,
-          onGenerateTitle: onGenerateTitle,
-          color: color,
-          theme: controller.theme ?? theme ?? ThemeData.fallback(),
-          darkTheme: controller.darkTheme ??
-              darkTheme ??
-              theme ??
-              ThemeData.fallback(),
-          themeMode: controller.themeMode ?? themeMode,
-          locale: Get.locale ?? locale,
-          scaffoldMessengerKey:
-              scaffoldMessengerKey ?? controller.scaffoldMessengerKey,
-          localizationsDelegates: localizationsDelegates,
-          localeListResolutionCallback: localeListResolutionCallback,
-          localeResolutionCallback: localeResolutionCallback,
-          supportedLocales: supportedLocales,
-          debugShowMaterialGrid: debugShowMaterialGrid,
-          showPerformanceOverlay: showPerformanceOverlay,
-          checkerboardRasterCacheImages: checkerboardRasterCacheImages,
-          checkerboardOffscreenLayers: checkerboardOffscreenLayers,
-          showSemanticsDebugger: showSemanticsDebugger,
-          debugShowCheckedModeBanner: debugShowCheckedModeBanner,
-          shortcuts: shortcuts,
-          scrollBehavior: scrollBehavior,
-          useInheritedMediaQuery: useInheritedMediaQuery,
-        );
-      }),
+  Widget build(BuildContext context) => GetBuilder<GetMaterialController>(
+        init: Get.rootController,
+        dispose: (d) {
+          onDispose?.call();
+        },
+        initState: (i) {
+          Get.engine.addPostFrameCallback((timeStamp) {
+            onReady?.call();
+          });
+          if (locale != null) Get.locale = locale;
+
+          if (fallbackLocale != null) Get.fallbackLocale = fallbackLocale;
+
+          if (translations != null) {
+            Get.addTranslations(translations!.keys);
+          } else if (translationsKeys != null) {
+            Get.addTranslations(translationsKeys!);
+          }
+
+          Get.customTransition = customTransition;
+
+          initialBinding?.dependencies();
+          if (getPages != null) {
+            Get.addPages(getPages!);
+          }
+
+          //Get.setDefaultDelegate(routerDelegate);
+          Get.smartManagement = smartManagement;
+          onInit?.call();
+
+          Get.config(
+            enableLog: enableLog ?? Get.isLogEnable,
+            logWriterCallback: logWriterCallback,
+            defaultTransition: defaultTransition ?? Get.defaultTransition,
+            defaultOpaqueRoute: opaqueRoute ?? Get.isOpaqueRouteDefault,
+            defaultPopGesture: popGesture ?? Get.isPopGestureEnable,
+            defaultDurationTransition:
+                transitionDuration ?? Get.defaultTransitionDuration,
+          );
+        },
+        builder: (_) => routerDelegate != null
+            ? MaterialApp.router(
+                routerDelegate: routerDelegate!,
+                routeInformationParser: routeInformationParser!,
+                backButtonDispatcher: backButtonDispatcher,
+                routeInformationProvider: routeInformationProvider,
+                key: _.unikey,
+                builder: defaultBuilder,
+                title: title,
+                onGenerateTitle: onGenerateTitle,
+                color: color,
+                theme: _.theme ?? theme ?? ThemeData.fallback(),
+                darkTheme:
+                    _.darkTheme ?? darkTheme ?? theme ?? ThemeData.fallback(),
+                themeMode: _.themeMode ?? themeMode,
+                locale: Get.locale ?? locale,
+                scaffoldMessengerKey:
+                    scaffoldMessengerKey ?? _.scaffoldMessengerKey,
+                localizationsDelegates: localizationsDelegates,
+                localeListResolutionCallback: localeListResolutionCallback,
+                localeResolutionCallback: localeResolutionCallback,
+                supportedLocales: supportedLocales,
+                debugShowMaterialGrid: debugShowMaterialGrid,
+                showPerformanceOverlay: showPerformanceOverlay,
+                checkerboardRasterCacheImages: checkerboardRasterCacheImages,
+                checkerboardOffscreenLayers: checkerboardOffscreenLayers,
+                showSemanticsDebugger: showSemanticsDebugger,
+                debugShowCheckedModeBanner: debugShowCheckedModeBanner,
+                shortcuts: shortcuts,
+                scrollBehavior: scrollBehavior,
+                useInheritedMediaQuery: useInheritedMediaQuery,
+              )
+            : MaterialApp(
+                key: _.unikey,
+                navigatorKey: (navigatorKey == null
+                    ? Get.key
+                    : Get.addKey(navigatorKey!)),
+                scaffoldMessengerKey:
+                    scaffoldMessengerKey ?? _.scaffoldMessengerKey,
+                home: home,
+                routes: routes ?? const <String, WidgetBuilder>{},
+                initialRoute: initialRoute,
+                onGenerateRoute:
+                    (getPages != null ? generator : onGenerateRoute),
+                onGenerateInitialRoutes: (getPages == null || home != null)
+                    ? onGenerateInitialRoutes
+                    : initialRoutesGenerate,
+                onUnknownRoute: onUnknownRoute,
+                navigatorObservers: (navigatorObservers == null
+                    ? <NavigatorObserver>[
+                        GetObserver(routingCallback, Get.routing)
+                      ]
+                    : <NavigatorObserver>[
+                        GetObserver(routingCallback, Get.routing)
+                      ]
+                  ..addAll(navigatorObservers!)),
+                builder: defaultBuilder,
+                title: title,
+                onGenerateTitle: onGenerateTitle,
+                color: color,
+                theme: _.theme ?? theme ?? ThemeData.fallback(),
+                darkTheme:
+                    _.darkTheme ?? darkTheme ?? theme ?? ThemeData.fallback(),
+                themeMode: _.themeMode ?? themeMode,
+                locale: Get.locale ?? locale,
+                localizationsDelegates: localizationsDelegates,
+                localeListResolutionCallback: localeListResolutionCallback,
+                localeResolutionCallback: localeResolutionCallback,
+                supportedLocales: supportedLocales,
+                debugShowMaterialGrid: debugShowMaterialGrid,
+                showPerformanceOverlay: showPerformanceOverlay,
+                checkerboardRasterCacheImages: checkerboardRasterCacheImages,
+                checkerboardOffscreenLayers: checkerboardOffscreenLayers,
+                showSemanticsDebugger: showSemanticsDebugger,
+                debugShowCheckedModeBanner: debugShowCheckedModeBanner,
+                shortcuts: shortcuts,
+                scrollBehavior: scrollBehavior,
+                useInheritedMediaQuery: useInheritedMediaQuery,
+                //   actions: actions,
+              ),
+      );
+
+  Widget defaultBuilder(BuildContext context, Widget? child) {
+    return Directionality(
+      textDirection: textDirection ??
+          (rtlLanguages.contains(Get.locale?.languageCode)
+              ? TextDirection.rtl
+              : TextDirection.ltr),
+      child: builder == null
+          ? (child ?? Material())
+          : builder!(context, child ?? Material()),
     );
+  }
+
+  Route<dynamic> generator(RouteSettings settings) {
+    return PageRedirect(settings: settings, unknownRoute: unknownRoute).page();
+  }
+
+  List<Route<dynamic>> initialRoutesGenerate(String name) {
+    return [
+      PageRedirect(
+        settings: RouteSettings(name: name),
+        unknownRoute: unknownRoute,
+      ).page()
+    ];
   }
 }

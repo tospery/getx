@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../get_core/get_core.dart';
 import '../../get_navigation.dart';
@@ -39,8 +40,8 @@ class GetBar extends GetSnackBar {
     AnimationController? progressIndicatorController,
     Color? progressIndicatorBackgroundColor,
     Animation<Color>? progressIndicatorValueColor,
-    SnackPosition snackPosition = SnackPosition.bottom,
-    SnackStyle snackStyle = SnackStyle.floating,
+    SnackPosition snackPosition = SnackPosition.BOTTOM,
+    SnackStyle snackStyle = SnackStyle.FLOATING,
     Curve forwardAnimationCurve = Curves.easeOutCirc,
     Curve reverseAnimationCurve = Curves.easeOutCirc,
     Duration animationDuration = const Duration(seconds: 1),
@@ -266,8 +267,8 @@ class GetSnackBar extends StatefulWidget {
     this.progressIndicatorController,
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
-    this.snackPosition = SnackPosition.bottom,
-    this.snackStyle = SnackStyle.floating,
+    this.snackPosition = SnackPosition.BOTTOM,
+    this.snackStyle = SnackStyle.FLOATING,
     this.forwardAnimationCurve = Curves.easeOutCirc,
     this.reverseAnimationCurve = Curves.easeOutCirc,
     this.animationDuration = const Duration(seconds: 1),
@@ -336,16 +337,16 @@ class GetSnackBarState extends State<GetSnackBar>
     return Align(
       heightFactor: 1.0,
       child: Material(
-        color: widget.snackStyle == SnackStyle.floating
+        color: widget.snackStyle == SnackStyle.FLOATING
             ? Colors.transparent
             : widget.backgroundColor,
         child: SafeArea(
-          minimum: widget.snackPosition == SnackPosition.bottom
+          minimum: widget.snackPosition == SnackPosition.BOTTOM
               ? EdgeInsets.only(
                   bottom: MediaQuery.of(context).viewInsets.bottom)
               : EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-          bottom: widget.snackPosition == SnackPosition.bottom,
-          top: widget.snackPosition == SnackPosition.top,
+          bottom: widget.snackPosition == SnackPosition.BOTTOM,
+          top: widget.snackPosition == SnackPosition.TOP,
           left: false,
           right: false,
           child: Stack(
@@ -448,7 +449,7 @@ You need to either use message[String], or messageText[Widget] or define a userI
   }
 
   void _configureLeftBarFuture() {
-    ambiguate(Engine.instance)!.addPostFrameCallback(
+    ambiguate(SchedulerBinding.instance)?.addPostFrameCallback(
       (_) {
         final keyContext = _backgroundBoxKey.currentContext;
         if (keyContext != null) {
@@ -650,10 +651,10 @@ enum RowStyle {
 /// snackbar display, [SnackbarStatus.CLOSING] Starts with the closing animation
 /// and ends
 /// with the full snackbar dispose
-enum SnackbarStatus { open, closed, opening, closing }
+enum SnackbarStatus { OPEN, CLOSED, OPENING, CLOSING }
 
 /// Indicates if snack is going to start at the [TOP] or at the [BOTTOM]
-enum SnackPosition { top, bottom }
+enum SnackPosition { TOP, BOTTOM }
 
 /// Indicates if snack will be attached to the edge of the screen or not
-enum SnackStyle { floating, grounded }
+enum SnackStyle { FLOATING, GROUNDED }
